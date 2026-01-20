@@ -155,20 +155,22 @@ impl P2PNetwork {
         let msg = P2PMessage::SyncRequest { from_height: height };
         let data = bincode::serialize(&msg).unwrap();
 
-        let peers = self.peers.lock().unwrap();
-        for peer in peers.values() {
-            let _ = peer.stream.write_all(&data);
-        }
+        let mut peers = self.peers.lock().unwrap();
+for peer in peers.values_mut() {
+    let _ = peer.stream.write_all(&data);
+}
+
     }
 
     pub fn broadcast_block(&self, block: &Block) {
         let msg = P2PMessage::Block(block.clone());
         let data = bincode::serialize(&msg).unwrap();
 
-        let peers = self.peers.lock().unwrap();
-        for peer in peers.values() {
-            let _ = peer.stream.write_all(&data);
-        }
+        let mut peers = self.peers.lock().unwrap();
+for peer in peers.values_mut() {
+    let _ = peer.stream.write_all(&data);
+}
+
     }
 
     pub fn peer_count(&self) -> usize {
