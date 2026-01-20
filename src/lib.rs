@@ -7,5 +7,7 @@ pub mod difficulty;
 pub mod reward;
 pub mod chain;
 pub mod revelation;
-pub mod p2p;
+pub mod network;
+mod p2p;
 pub mod merkle;
+mod ui;
