@@ -1,10 +1,14 @@
 use bitcoin_v0_2_revelation::chain::Blockchain;
 use bitcoin_v0_2_revelation::network::P2PNetwork;
+use bitcoin_v0_2_revelation::api::start_api;
 
 use std::net::SocketAddr;
 use std::sync::{Arc, Mutex};
+use std::thread;
 use std::thread::sleep;
 use std::time::{Duration, Instant};
+
+use tokio::runtime::Runtime;
 
 enum NodeMode {
     Syncing,
@@ -32,6 +36,14 @@ fn main() {
 
     let chain = Arc::new(Mutex::new(local_chain));
 
+    // ---- START HTTP API (FIXED & CORRECT) ----
+    let api_chain = Arc::clone(&chain);
+    thread::spawn(move || {
+        let rt = Runtime::new().expect("Failed to create Tokio runtime");
+        rt.block_on(start_api(api_chain, 8080));
+    });
+    // -----------------------------------------
+
     let miner_key = "REVELATION_MINER_001";
 
     let listen_addr = "0.0.0.0:8333".parse::<SocketAddr>().unwrap();
@@ -58,7 +70,6 @@ fn main() {
                     last_change = Instant::now();
                 }
 
-                // If no new blocks for 3 seconds, assume sync complete
                 if last_change.elapsed() > Duration::from_secs(3) && height > 0 {
                     println!("✅ Sync complete at height {}", height);
                     mode = NodeMode::Normal;
@@ -100,7 +111,6 @@ fn main() {
                     print_chain(&chain);
                 }
 
-                // Yield CPU to networking
                 sleep(Duration::from_millis(100));
             }
         }
