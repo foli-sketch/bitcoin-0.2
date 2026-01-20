@@ -59,7 +59,7 @@ cargo run --release
 On startup, the node will:
 
 1. Load the local blockchain from disk
-2. Create the genesis block if none exists
+2. Create the revelation block if none exists
 3. Listen for incoming peer connections
 4. Request missing blocks from peers
 5. Begin mining once synchronization stabilizes
