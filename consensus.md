@@ -35,7 +35,7 @@ A chain is valid if:
 
 * All blocks are individually valid
 * Blocks are correctly linked in sequence
-* The genesis block matches the expected initial state
+* The revelation block matches the expected initial state
 
 ---
 
