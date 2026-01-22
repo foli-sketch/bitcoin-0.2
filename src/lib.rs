@@ -12,5 +12,7 @@ pub mod consensus;
 pub mod mempool;
 pub mod policy;
 pub mod network;
-pub mod p2p;   
+pub mod p2p;
 pub mod api;
+pub use crypto::{sha256, pubkey_hash};
+pub use crypto::verify_signature;
