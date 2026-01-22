@@ -130,12 +130,3 @@ Each node independently verifies all data it receives.
 
 Consensus emerges from shared rules, not coordination.
 
----
-
-### Why this matches the “Satoshi tone”
-
-* Short, declarative sentences
-* No claims of “security guarantees”
-* Emphasis on **rules + verification**, not behavior
-* Avoids implementation trivia unless necessary
-* Reads like protocol documentation, not a tutorial
