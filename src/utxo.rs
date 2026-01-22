@@ -5,7 +5,6 @@ use serde::{Serialize, Deserialize};
 pub struct UTXO {
     pub value: u64,
     pub pubkey_hash: Vec<u8>,
-    pub height: Option<u64>, // None = legacy / genesis / unknown
 }
 
 pub type UTXOSet = HashMap<String, UTXO>;
