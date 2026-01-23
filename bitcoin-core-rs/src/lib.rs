@@ -19,3 +19,4 @@ pub use crypto::verify_signature;
 pub mod wallet;
 pub const CLIENT_VERSION: &str = "0.2.1-consensus-v2";
 pub mod miner;
+pub const CLIENT_VERSION: &str = "0.3.0-consensus-v3";
