@@ -18,3 +18,4 @@ pub use crypto::{sha256, pubkey_hash};
 pub use crypto::verify_signature;
 pub mod wallet;
 pub const CLIENT_VERSION: &str = "0.2.1-consensus-v2";
+pub mod miner;
