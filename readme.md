@@ -1,155 +1,269 @@
+Bitcoin v0.3.2 — Revelation Edition
+Stable Node, Wallet & Transaction Layer
 
-# Bitcoin v0.3.1 — Revelation Edition
+Consensus v3 — Frozen
 
-### Wallet and Transaction Layer Activated
+Repository:
+https://github.com/Satoshi-Nakamoto-ITL/bitcoin-0.2
 
-**Repository:**
-[https://github.com/Satoshi-Nakamoto-ITL/bitcoin-0.2](https://github.com/Satoshi-Nakamoto-ITL/bitcoin-0.2)
+Overview
 
-This release activates the transaction and wallet layer on top of the stabilized **Layer-1 Consensus v3**.
+Bitcoin Revelation v0.3.2 is a stable, non-forking release that activates the full wallet, transaction, mempool, mining, API, and P2P networking layers on top of a frozen Layer-1 Consensus v3.
 
 No consensus rules are modified.
-Layer-1 remains frozen.
+No chain reset is required.
 
----
+This release is safe for long-running nodes.
 
-## Release Status
+Release Status
 
-Version 0.3.1 introduces a complete end-to-end transaction flow while preserving full compatibility with v0.3.0 nodes.
+Version 0.3.2 is a stabilization and integration release following v0.3.1.
 
-New capabilities in this release:
+What’s Included
 
-* Deterministic HD wallets
-* Encrypted on-disk wallet storage
-* Transaction creation and ECDSA signing
-* Mempool transaction validation and fee policy
-* Peer-to-peer transaction relay
-* Miner inclusion of mempool transactions into blocks
-* Command-line wallet interface
+Deterministic HD wallets (BIP39)
 
-Layer-1 validation rules are unchanged.
+Encrypted wallet storage (AES-GCM + PBKDF2)
 
----
+ECDSA transaction signing & validation
 
-## Transaction Layer
+Coinbase maturity enforcement
 
-The transaction system is fully operational.
+Mempool validation & transaction relay
 
-### UTXO Ownership Model
+Miner selection from mempool
+
+Full P2P block & transaction propagation
+
+REST API block explorer
+
+CLI wallet interface
+
+Persistent chain & UTXO storage
+
+What’s NOT Changed
+
+❌ No consensus rule changes
+
+❌ No reward schedule changes
+
+❌ No difficulty changes
+
+❌ No protocol fork
+
+Consensus v3 remains frozen.
+
+Transaction Layer
+
+The transaction system is fully operational and enforced by nodes.
+
+UTXO Ownership Model
 
 Each output is locked to a public key hash (PKH).
-Spending requires:
 
-* Revealing the corresponding public key
-* Providing a valid ECDSA signature
+To spend:
 
-### Node Enforcement
+Reveal the public key
 
-For every transaction input, nodes verify:
+Provide a valid ECDSA signature
 
-* `hash(pubkey) == referenced UTXO owner`
-* Signature validity against the transaction sighash
-* Total inputs greater than or equal to total outputs
+Satisfy coinbase maturity rules
 
-These rules establish cryptographic ownership without introducing trusted parties.
+Wallet System
 
----
+The wallet operates above consensus and does not alter validation rules.
 
-## Wallet System
+Features
 
-Version 0.3.1 includes a deterministic wallet implementation:
+BIP39 mnemonic recovery phrase
 
-* BIP39 mnemonic seed generation
-* Hierarchical deterministic key derivation
-* Automatic change address generation
-* AES-GCM encrypted wallet storage
-* PBKDF2 password-based key derivation
-* Memory locking of sensitive key material
-* Automatic wallet auto-lock timeout
+Hierarchical deterministic key derivation
 
-Wallet behavior operates above consensus and does not alter validation rules.
+Automatic change outputs
 
----
+AES-256-GCM encrypted wallet file
 
-## Transaction Flow
+PBKDF2 password hardening
 
-1. Wallet selects owned UTXOs
-2. Inputs are signed using derived keys
-3. Node validates transaction signatures and ownership
-4. Transaction enters the mempool
-5. Mempool applies fee and double-spend policy
-6. Miner selects transactions by fee rate
-7. Block is mined under existing consensus rules
-8. UTXO set updates deterministically
+Secure memory locking (mlock)
 
-This enables peer-to-peer value transfer under fixed Layer-1 rules.
+Automatic lock on inactivity
 
----
+Transaction Flow
 
-## Mempool Policy
+Wallet selects spendable UTXOs
 
-The mempool includes:
+Inputs are signed locally
 
-* Double-spend prevention within the mempool
-* Fee calculation and minimum fee enforcement
-* Transaction size limits
-* Deterministic fee-rate-based mining selection
-* Reorganization-safe transaction resurrection
+Node validates ownership & signatures
 
-These are local policy rules and are not part of consensus.
+Transaction enters mempool
 
----
+Mempool applies policy rules
 
-## Command-Line Wallet
+Miner selects transactions
 
-The client includes a built-in wallet CLI:
+Block is mined under Consensus v3
 
-```
-cargo run wallet address
+UTXO set updates deterministically
+
+Mempool Policy (Non-Consensus)
+
+Double-spend prevention
+
+Transaction size limits
+
+Fee-rate based selection
+
+Reorg-safe transaction handling
+
+These rules are local policy, not consensus.
+
+Command-Line Wallet
+
+Built-in wallet CLI:
+
 cargo run wallet balance
-cargo run wallet send <address> <amount>
-```
+cargo run wallet send <pubkey_hash_hex> <amount>
 
-The CLI interacts with the local node and mempool without altering consensus behavior.
 
----
+Wallet commands interact with the local node and mempool.
 
-## Backward Compatibility
+REST API (Explorer)
 
-* Consensus v3 rules remain unchanged
-* Existing chains remain valid
-* Nodes running v0.3.0 continue to validate blocks correctly
-* Transaction functionality operates entirely above consensus
+Default endpoint:
 
-Version 0.3.1 is a non-forking feature release.
+http://127.0.0.1:8080
 
----
 
-## Release Identifier
+Endpoints:
 
-**Tag:** `v0.3.1-wallet-layer`
-**Client version:** `0.3.1-wallet-layer`
+/status
 
----
+/blocks
 
-## Scope of This Release
+/block/height/{n}
 
-Version 0.3.0 established a stable base layer.
-Version 0.3.1 enables use of that base layer for signed value transfer.
+/tx/{txid}
 
-Layer-1 consensus remains intentionally stable and unmodified.
+/address/{pubkey_hash}
 
----
+Installation & Running the Node
+Requirements (All Platforms)
 
-## Disclaimer
+Internet connection
 
-This software is provided for study, experimentation, and independent node operation.
+~200 MB disk space
 
-There is no warranty, no guarantee of future updates, and no central authority.
+Rust toolchain (stable)
 
-The rules are enforced by the code.
+📱 Termux (Android)
+1️⃣ Install dependencies
+pkg update && pkg upgrade
+pkg install git rust clang openssl pkg-config
 
----
+2️⃣ Clone repository
+git clone https://github.com/Satoshi-Nakamoto-ITL/bitcoin-0.2.git
+cd bitcoin-0.2
 
-**Satoshi-Nakamoto-ITL**
-Bitcoin v0.3.1 — Revelation Edition
+3️⃣ Build & run
+cargo run
+
+
+The node will:
+
+Create a wallet
+
+Start P2P networking
+
+Start mining
+
+Launch API on port 8080
+
+💻 Linux / macOS
+1️⃣ Install Rust
+curl https://sh.rustup.rs -sSf | sh
+source ~/.cargo/env
+
+2️⃣ Clone repository
+git clone https://github.com/Satoshi-Nakamoto-ITL/bitcoin-0.2.git
+cd bitcoin-0.2
+
+3️⃣ Build & run
+cargo run
+
+🪟 Windows (PowerShell)
+1️⃣ Install Rust
+
+Download and install:
+https://www.rust-lang.org/tools/install
+
+Restart PowerShell after install.
+
+2️⃣ Clone repository
+git clone https://github.com/Satoshi-Nakamoto-ITL/bitcoin-0.2.git
+cd bitcoin-0.2
+
+3️⃣ Run node
+cargo run
+
+🔗 Connecting to a Peer
+cargo run -- --connect IP:PORT
+
+
+Example:
+
+cargo run -- --connect 203.0.113.5:8333
+
+Data Storage
+
+All node data is stored locally:
+
+data/
+ ├─ blocks.json
+ ├─ utxos.json
+ └─ wallet.dat
+
+
+Deleting data/ resets the node state.
+
+Backward Compatibility
+
+Fully compatible with v0.3.0+ peers
+
+No fork, no replay risk
+
+Existing chains remain valid
+
+Release Identifier
+
+Tag: v0.3.2
+
+Client: Bitcoin Revelation v0.3.2
+
+Consensus: v3 (frozen)
+
+Scope of This Release
+
+v0.3.0 → Base Layer stabilization
+
+v0.3.1 → Wallet & transaction activation
+
+v0.3.2 → Stable integrated node release
+
+Disclaimer
+
+This software is provided as-is for research, experimentation, and independent node operation.
+
+There is:
+
+No warranty
+
+No central authority
+
+No permission system
+
+The rules are enforced by code, not humans.
+
+Satoshi-Nakamoto-ITL
+Bitcoin v0.3.2 — Revelation Edition
