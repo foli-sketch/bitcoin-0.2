@@ -1,5 +1,5 @@
 app = "bitcoin-0-2-1t4c3g"
-primary_region = "iad"
+primary_region = "sin"
 
 kill_signal = "SIGINT"
 kill_timeout = 5
@@ -7,7 +7,6 @@ kill_timeout = 5
 [experimental]
   auto_rollback = true
 
-# ───────── TCP P2P SERVICE ─────────
 [[services]]
   protocol = "tcp"
   internal_port = 8333
@@ -20,11 +19,9 @@ kill_timeout = 5
     soft_limit = 50
     hard_limit = 100
 
-# ───────── DEPLOYMENT ─────────
 [deploy]
   strategy = "immediate"
 
-# ───────── VM ─────────
 [vm]
   cpu_kind = "shared"
   cpus = 1
