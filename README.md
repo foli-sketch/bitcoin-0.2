@@ -1,4 +1,5 @@
 ⛓ Bitcoin v0.3.3 — Revelation Edition  
+
 Stable Node, Wallet, Mining & Public P2P Network
 
 Consensus v3 — FINAL / FROZEN
@@ -24,6 +25,8 @@ A live public seed node is available, allowing anyone to join and mine without m
 ---
 
 ## 🌍 Public Seed Node (Live)
+
+
 
 bitcoin-0-2.fly.dev:8333
 
@@ -79,6 +82,8 @@ If the recovery phrase is lost, funds are unrecoverable.
 ## REST API
 
 Default:
+
+
 http://127.0.0.1:8080
 
 
