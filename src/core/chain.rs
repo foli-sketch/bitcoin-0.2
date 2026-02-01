@@ -40,9 +40,11 @@ const GENESIS_TARGET: [u8; 32] = [0xff; 32];
 const GENESIS_MERKLE: &str =
     "a081607fd3b32b29fd4cb46eb5bfe96406aeac0053910e963de67ddd6d10834a";
 
-// ✅ FINAL, VERIFIED GENESIS HASH
+// ✅ FINAL, VERIFIED
 const GENESIS_HASH: &str =
     "8bdfff36f8f80e042e85770768df64f95b61f9e5f5128f4e49955bce3e902a1d";
+
+// ─────────────────────────────────────────────
 
 pub struct Blockchain {
     pub blocks: Vec<Block>,
@@ -112,7 +114,7 @@ impl Blockchain {
     }
 }
 
-/* ───────── Consensus logic ───────── */
+/* ───────── Persistence helpers ───────── */
 
 fn data_dir() -> PathBuf {
     let mut path = env::current_exe().unwrap();
@@ -145,10 +147,12 @@ fn median_time_past(chain: &[Block]) -> i64 {
     times[times.len() / 2]
 }
 
+/* ───────── Blockchain implementation ───────── */
+
 impl Blockchain {
     pub fn new() -> Self {
         Self {
-            blocks: vec![],
+            blocks: Vec::new(),
             utxos: HashMap::new(),
             mempool: Vec::new(),
         }
@@ -156,6 +160,50 @@ impl Blockchain {
 
     pub fn height(&self) -> u64 {
         self.blocks.len() as u64
+    }
+
+    /// Load chain from disk or create genesis
+    pub fn initialize(&mut self) {
+        fs::create_dir_all(data_dir()).unwrap();
+
+        // ── Load existing chain (NON-CONSENSUS) ──
+        if blocks_file().exists() {
+            let data = fs::read_to_string(blocks_file()).unwrap();
+            if !data.trim().is_empty() {
+                self.blocks = serde_json::from_str(&data).unwrap();
+            }
+        }
+
+        // ── Create genesis ONLY if chain is empty ──
+        if self.blocks.is_empty() {
+            let genesis = Block {
+                header: BlockHeader {
+                    height: 0,
+                    timestamp: GENESIS_TIMESTAMP,
+                    prev_hash: vec![0u8; 32],
+                    nonce: GENESIS_NONCE,
+                    target: GENESIS_TARGET,
+                    merkle_root: hex::decode(GENESIS_MERKLE).unwrap(),
+                },
+                transactions: vec![revelation_tx()],
+                hash: hex::decode(GENESIS_HASH).unwrap(),
+            };
+
+            // 🔒 CONSENSUS INVARIANTS
+            assert!(
+                genesis.hash == genesis.hash_header(),
+                "Genesis hash constant does not match computed header hash"
+            );
+            assert!(
+                genesis.verify_pow(),
+                "Genesis block does not satisfy Proof-of-Work"
+            );
+
+            self.blocks.push(genesis);
+        }
+
+        self.rebuild_utxos();
+        self.save_all();
     }
 
     pub fn validate_and_add_block(&mut self, block: Block) -> bool {
@@ -168,11 +216,7 @@ impl Blockchain {
             }
         }
 
-        if expected_height == 0 {
-            if block.header.height != 0 {
-                return false;
-            }
-        } else {
+        if expected_height > 0 {
             let prev = self.blocks.last().unwrap();
             if block.header.prev_hash != prev.hash {
                 return false;
@@ -207,40 +251,6 @@ impl Blockchain {
         self.rebuild_utxos();
         self.save_all();
         true
-    }
-
-    pub fn initialize(&mut self) {
-        fs::create_dir_all(data_dir()).unwrap();
-
-        if self.blocks.is_empty() {
-            let genesis = Block {
-                header: BlockHeader {
-                    height: 0,
-                    timestamp: GENESIS_TIMESTAMP,
-                    prev_hash: vec![0u8; 32],
-                    nonce: GENESIS_NONCE,
-                    target: GENESIS_TARGET,
-                    merkle_root: hex::decode(GENESIS_MERKLE).unwrap(),
-                },
-                transactions: vec![revelation_tx()],
-                hash: hex::decode(GENESIS_HASH).unwrap(),
-            };
-
-            // 🔒 CONSENSUS INVARIANTS
-            assert!(
-                genesis.hash == genesis.hash_header(),
-                "Genesis hash constant does not match computed header hash"
-            );
-            assert!(
-                genesis.verify_pow(),
-                "Genesis block does not satisfy Proof-of-Work"
-            );
-
-            self.blocks.push(genesis);
-        }
-
-        self.rebuild_utxos();
-        self.save_all();
     }
 
     pub fn rebuild_utxos(&mut self) {
