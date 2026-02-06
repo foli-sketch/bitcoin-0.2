@@ -26,9 +26,6 @@ use crate::{
 const COINBASE_MATURITY: u64 = 100;
 const _CONSENSUS_V2_HEIGHT: u64 = 1000;
 
-// 🔒 POLICY — NON-CONSENSUS
-const MAX_REORG_DEPTH: usize = 100;
-
 // ─────────────────────────────────────────────
 // 🔒 HARD-CODED GENESIS (CONSENSUS LAW)
 // ─────────────────────────────────────────────
@@ -206,52 +203,75 @@ impl Blockchain {
         self.save_all();
     }
 
-    pub fn validate_and_add_block(&mut self, block: Block) -> bool {
-        let expected_height = self.height();
+pub fn validate_and_add_block(&mut self, block: Block) -> bool {
+    use crate::consensus::fork_choice;
 
-        if block.header.height < expected_height {
-            let depth = expected_height - block.header.height;
-            if depth as usize > MAX_REORG_DEPTH {
-                return false;
-            }
-        }
+    // Basic height sanity
+    if block.header.height > self.height() + 1 {
+        return false;
+    }
 
-        if expected_height > 0 {
-            let prev = self.blocks.last().unwrap();
-            if block.header.prev_hash != prev.hash {
-                return false;
-            }
-        }
-
-        if !self.blocks.is_empty() {
-            let mtp = median_time_past(&self.blocks);
-            if block.header.timestamp <= mtp {
-                return false;
-            }
-            if block.header.timestamp >
-                OffsetDateTime::now_utc().unix_timestamp() + MAX_FUTURE_DRIFT
-            {
-                return false;
-            }
-        }
-
-        if block.header.target != calculate_next_target(&self.blocks) {
+    // Timestamp rules
+    if !self.blocks.is_empty() {
+        let mtp = median_time_past(&self.blocks);
+        if block.header.timestamp <= mtp {
             return false;
         }
 
-        if !block.verify_pow() {
+        if block.header.timestamp >
+            OffsetDateTime::now_utc().unix_timestamp() + MAX_FUTURE_DRIFT
+        {
             return false;
         }
+    }
 
-        if merkle_root(&block.transactions) != block.header.merkle_root {
-            return false;
-        }
+    // Difficulty must match expected target
+    if block.header.target != calculate_next_target(&self.blocks) {
+        return false;
+    }
 
-        self.blocks.push(block);
+    // PoW validity
+    if !block.verify_pow() {
+        return false;
+    }
+
+    // Merkle root
+    if merkle_root(&block.transactions) != block.header.merkle_root {
+        return false;
+    }
+
+    // Accept block (side branches allowed)
+    self.blocks.push(block);
+
+    // ─────────────────────────────────────────
+    // 🔒 CONSENSUS v4 FORK CHOICE
+    // Select chain with highest cumulative work
+    // ─────────────────────────────────────────
+    if let Some(best_hash) = fork_choice::best_tip(&self.blocks) {
+        let best_chain: Vec<Block> = {
+            let mut chain = Vec::new();
+            let mut current = best_hash;
+
+            while let Some(b) = self.blocks.iter().find(|x| x.hash == current) {
+                chain.push(b.clone());
+                if b.header.height == 0 {
+                    break;
+                }
+                current = b.header.prev_hash.clone();
+            }
+
+            chain.into_iter().rev().collect()
+        };
+
+        self.blocks = best_chain;
         self.rebuild_utxos();
         self.save_all();
-        true
+        return true;
     }
+
+    false
+}
+
 
     pub fn rebuild_utxos(&mut self) {
         self.utxos.clear();

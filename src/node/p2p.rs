@@ -3,7 +3,6 @@ use std::sync::{Arc, Mutex};
 
 // Required imports from the project structure
 use crate::core::block::Block;
-use crate::core::transaction::Transaction;
 use crate::core::chain::Blockchain;
 use crate::validation::validate_transaction;
 use crate::node::message::{NetworkMessage, PROTOCOL_VERSION};

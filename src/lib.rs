@@ -7,8 +7,8 @@ pub mod wallet;
 pub mod wallet_store;
 pub mod crypto;
 pub mod consensus;
-pub mod node;        // ✅ REQUIRED
-pub mod interface;   // ✅ REQUIRED
+pub mod node;        
+pub mod interface;   
 
 // New module tree
 pub mod core;
@@ -22,4 +22,4 @@ pub use core::chain;
 
 pub use crypto::{sha256, pubkey_hash, verify_signature};
 
-pub const CLIENT_VERSION: &str = "0.3.0-consensus-v3";
+pub const CLIENT_VERSION: &str = "0.4.0-consensus-v4";
